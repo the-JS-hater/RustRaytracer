@@ -115,8 +115,6 @@ pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
 pub fn unit_vector(v: Vec3) -> Vec3 {
     return v / v.length();
 }
-// inline vec3 unit_vector(const vec3& v) {
-//     return v / v.length();
 
 impl Vec3 {
     pub fn length(&self) -> f64 {
@@ -128,6 +126,20 @@ impl Vec3 {
     }
 
     pub fn write_color(&self) -> String {
-        format!("{} {} {}\n", self.x as u8, self.y as u8, self.z as u8)
+        let clamp = |x: f64| -> u8 {
+            if x < 0.0 {
+                0
+            } else if x > 255.0 {
+                255
+            } else {
+                x as u8
+            }
+        };
+
+        let r = clamp(self.x * 255.0);
+        let g = clamp(self.y * 255.0);
+        let b = clamp(self.z * 255.0);
+
+        format!("{} {} {}\n", r, g, b)
     }
 }
