@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Write;
+mod vec3;
 
 fn main() -> std::io::Result<()> {
     let mut file = File::create("output.ppm")?;
@@ -13,15 +14,20 @@ fn main() -> std::io::Result<()> {
     file.write_all(formatted_str.as_bytes())?;
 
     for i in 0..IMAGE_HEIGHT {
-        for j in 0..IMAGE_WIDTH {
-            let r = (i as f32 / IMAGE_WIDTH as f32 * 255.0) as u8;
-            let g = (j as f32 / IMAGE_HEIGHT as f32 * 255.0) as u8;
-            let b = 0;
+        println!("Scanlines remaining {}", IMAGE_HEIGHT - i);
 
-            let pixel = format!("{} {} {}\n", r, g, b);
+        for j in 0..IMAGE_WIDTH {
+            let pixel_color: vec3::Color = vec3::Vec3 {
+                x: (i as f64 / IMAGE_WIDTH as f64 * 255.0),
+                y: (j as f64 / IMAGE_HEIGHT as f64 * 255.0),
+                z: 0.0,
+            };
+
+            let pixel: String = pixel_color.write_color();
             file.write_all(pixel.as_bytes())?;
         }
     }
 
+    println!("Scan DONE!");
     Ok(())
 }
