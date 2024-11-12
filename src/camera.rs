@@ -1,6 +1,7 @@
 use super::hit_record::{HitRecord, Hittable};
 use super::interval::Interval;
 use super::ray::Ray;
+use super::utils::{rnd_float, rnd_float_range};
 use super::vec3::{unit_vector, Color, Point, Vec3};
 use super::HittableList;
 use std::fs::File;
@@ -14,6 +15,8 @@ pub struct Camera {
     pub pixel00_loc: Point,
     pub pixel_delta_u: Vec3,
     pub pixel_delta_v: Vec3,
+    pub samples_per_pixel: u32,
+    pub pixel_samples_scale: f64,
 }
 
 impl Camera {
@@ -27,24 +30,36 @@ impl Camera {
             println!("Scanlines remaining {}", self.image_height - j);
 
             for i in 0..self.image_width {
-                let pixel_center = self.pixel00_loc
-                    + (self.pixel_delta_u * i as f64)
-                    + (self.pixel_delta_v * j as f64);
-                let ray_direction = pixel_center - self.center;
-                let ray = Ray {
-                    origin: self.center,
-                    dir: ray_direction,
+                let mut pixel_color: Color = Color {
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
                 };
+                for _ in 0..self.samples_per_pixel {
+                    let ray: Ray = self.get_ray(i, j);
+                    pixel_color += ray_color(&ray, world);
+                }
 
-                let pixel_color: Color = ray_color(&ray, world);
-
-                let pixel: String = pixel_color.write_color();
+                let pixel: String = (pixel_color * self.pixel_samples_scale).write_color();
                 file.write_all(pixel.as_bytes())?;
             }
         }
 
         println!("Scan DONE!");
         Ok(())
+    }
+    pub fn get_ray(&self, i: u32, j: u32) -> Ray {
+        let offset: Vec3 = sample_square();
+        let pixel_sample: Point = self.pixel00_loc
+            + (self.pixel_delta_u * (i as f64 + offset.x))
+            + (self.pixel_delta_v * (j as f64 + offset.y));
+        let ray_origin: Point = self.center;
+        let ray_direction = pixel_sample - ray_origin;
+
+        return Ray {
+            origin: ray_origin,
+            dir: ray_direction,
+        };
     }
 }
 
@@ -85,7 +100,8 @@ pub fn initialize() -> Camera {
     let image_width: u32 = 400;
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
     let image_height: u32 = if image_height < 1 { 1 } else { image_height };
-
+    let samples_per_pixel = 100;
+    let pixel_samples_scale = 1.0 / samples_per_pixel as f64;
     let focal_length: f64 = 1.0;
     let viewport_height: f64 = 2.0;
     let viewport_width: f64 = viewport_height * (image_width as f64 / image_height as f64);
@@ -127,5 +143,15 @@ pub fn initialize() -> Camera {
         pixel00_loc,
         pixel_delta_u,
         pixel_delta_v,
+        samples_per_pixel,
+        pixel_samples_scale,
+    };
+}
+
+pub fn sample_square() -> Vec3 {
+    return Vec3 {
+        x: rnd_float() - 0.5,
+        y: rnd_float() - 0.5,
+        z: 0.0,
     };
 }

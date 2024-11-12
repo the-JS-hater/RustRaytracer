@@ -1,3 +1,4 @@
+use super::interval::Interval;
 use std::ops;
 
 #[derive(Copy, Clone)]
@@ -126,19 +127,14 @@ impl Vec3 {
     }
 
     pub fn write_color(&self) -> String {
-        let clamp = |x: f64| -> u8 {
-            if x < 0.0 {
-                0
-            } else if x > 255.0 {
-                255
-            } else {
-                x as u8
-            }
+        let intensity: Interval = Interval {
+            min: 0.0,
+            max: 0.999,
         };
 
-        let r = clamp(self.x * 255.0);
-        let g = clamp(self.y * 255.0);
-        let b = clamp(self.z * 255.0);
+        let r = (256.0 * intensity.clamp(self.x)) as u8;
+        let g = (256.0 * intensity.clamp(self.y)) as u8;
+        let b = (256.0 * intensity.clamp(self.z)) as u8;
 
         format!("{} {} {}\n", r, g, b)
     }
