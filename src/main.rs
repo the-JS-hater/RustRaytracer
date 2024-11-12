@@ -1,8 +1,15 @@
+#![allow(dead_code)]
+
+mod hit_record;
+mod hittable_list;
+mod ray;
+mod sphere;
+mod vec3;
+use hittable_list::HittableList;
+use ray::{ray_color, Ray};
+use sphere::Sphere;
 use std::fs::File;
 use std::io::Write;
-mod ray;
-use ray::Ray;
-mod vec3;
 use vec3::{Color, Point, Vec3};
 
 fn main() -> std::io::Result<()> {
@@ -12,6 +19,28 @@ fn main() -> std::io::Result<()> {
     let image_width: u32 = 400;
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
     let image_height: u32 = if image_height < 1 { 1 } else { image_height };
+
+    // World
+
+    let world: &mut HittableList = &mut HittableList::default();
+
+    world.add(Sphere {
+        center: Point {
+            x: 0.0,
+            y: 0.0,
+            z: -1.0,
+        },
+        radius: 0.5,
+    });
+
+    world.add(Sphere {
+        center: Point {
+            x: 0.0,
+            y: -100.5,
+            z: -1.0,
+        },
+        radius: 100.0,
+    });
 
     // Camera
     let focal_length: f64 = 1.0;
@@ -66,7 +95,8 @@ fn main() -> std::io::Result<()> {
                 origin: camera_center,
                 dir: ray_direction,
             };
-            let pixel_color = ray.ray_color();
+
+            let pixel_color: Color = ray_color(&ray, world);
 
             let pixel: String = pixel_color.write_color();
             file.write_all(pixel.as_bytes())?;
