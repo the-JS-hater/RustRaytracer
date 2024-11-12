@@ -2,6 +2,7 @@
 
 mod hit_record;
 mod hittable_list;
+mod interval;
 mod ray;
 mod sphere;
 mod vec3;
