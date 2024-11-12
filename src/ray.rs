@@ -1,5 +1,6 @@
 use super::hit_record::{HitRecord, Hittable};
 use super::hittable_list::HittableList;
+use super::interval::Interval;
 use super::vec3::{dot, unit_vector, Color, Point, Vec3};
 
 pub struct Ray {
@@ -69,7 +70,14 @@ impl Ray {
 
 pub fn ray_color(ray: &Ray, world: &HittableList) -> Color {
     let mut temp_rec = HitRecord::default();
-    if world.hit(ray, 0.0, std::f64::INFINITY, &mut temp_rec) {
+    if world.hit(
+        ray,
+        &Interval {
+            min: 0.0,
+            max: std::f64::INFINITY,
+        },
+        &mut temp_rec,
+    ) {
         return (temp_rec.normal
             + Color {
                 x: 1.0,
