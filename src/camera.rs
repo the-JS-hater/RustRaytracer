@@ -17,6 +17,7 @@ pub struct Camera {
     pub pixel_delta_v: Vec3,
     pub samples_per_pixel: u32,
     pub pixel_samples_scale: f64,
+    pub max_depth: u32,
 }
 
 impl Camera {
@@ -37,7 +38,7 @@ impl Camera {
                 };
                 for _ in 0..self.samples_per_pixel {
                     let ray: Ray = self.get_ray(i, j);
-                    pixel_color += ray_color(&ray, world);
+                    pixel_color += ray_color(&ray, self.max_depth, world);
                 }
 
                 let pixel: String = (pixel_color * self.pixel_samples_scale).write_color();
@@ -63,7 +64,14 @@ impl Camera {
     }
 }
 
-pub fn ray_color(ray: &Ray, world: &HittableList) -> Color {
+pub fn ray_color(ray: &Ray, max_depth: u32, world: &HittableList) -> Color {
+    if max_depth == 0 {
+        return Color {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        };
+    }
     let mut temp_rec = HitRecord::default();
     if world.hit(
         ray,
@@ -79,6 +87,7 @@ pub fn ray_color(ray: &Ray, world: &HittableList) -> Color {
                 origin: temp_rec.p,
                 dir: direction,
             },
+            max_depth - 1,
             world,
         ) * 0.5;
     }
@@ -104,6 +113,7 @@ pub fn initialize() -> Camera {
     let image_height: u32 = if image_height < 1 { 1 } else { image_height };
     let samples_per_pixel = 100;
     let pixel_samples_scale = 1.0 / samples_per_pixel as f64;
+    let max_depth = 50;
     let focal_length: f64 = 1.0;
     let viewport_height: f64 = 2.0;
     let viewport_width: f64 = viewport_height * (image_width as f64 / image_height as f64);
@@ -147,6 +157,7 @@ pub fn initialize() -> Camera {
         pixel_delta_v,
         samples_per_pixel,
         pixel_samples_scale,
+        max_depth,
     };
 }
 
