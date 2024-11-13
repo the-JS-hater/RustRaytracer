@@ -2,7 +2,7 @@ use super::hit_record::{HitRecord, Hittable};
 use super::interval::Interval;
 use super::ray::Ray;
 use super::utils::{rnd_float, rnd_float_range};
-use super::vec3::{random_on_hemisphere, unit_vector, Color, Point, Vec3};
+use super::vec3::{rand_unit_vector, random_on_hemisphere, unit_vector, Color, Point, Vec3};
 use super::HittableList;
 use std::fs::File;
 use std::io::Write;
@@ -76,11 +76,12 @@ pub fn ray_color(ray: &Ray, max_depth: u32, world: &HittableList) -> Color {
     if world.hit(
         ray,
         &Interval {
-            min: 0.0,
+            min: 0.001,
             max: std::f64::INFINITY,
         },
         &mut temp_rec,
     ) {
+        let direction: Vec3 = temp_rec.normal + rand_unit_vector();
         let direction: Vec3 = random_on_hemisphere(&temp_rec.normal);
         return ray_color(
             &Ray {
