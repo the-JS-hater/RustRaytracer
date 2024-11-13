@@ -28,6 +28,15 @@ fn main() -> std::io::Result<()> {
 
     world.add(Sphere {
         center: Point {
+            x: 1.2,
+            y: 0.0,
+            z: -2.0,
+        },
+        radius: 0.4,
+    });
+
+    world.add(Sphere {
+        center: Point {
             x: 0.0,
             y: -100.5,
             z: -1.0,

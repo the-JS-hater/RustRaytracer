@@ -1,4 +1,5 @@
 use super::interval::Interval;
+use super::utils::{rnd_float, rnd_float_range};
 use std::ops;
 
 #[derive(Copy, Clone)]
@@ -115,6 +116,41 @@ pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
 
 pub fn unit_vector(v: Vec3) -> Vec3 {
     return v / v.length();
+}
+
+pub fn rand_unit_vector() -> Vec3 {
+    loop {
+        let p: Vec3 = random_range_vec(-1.0, 1.0);
+        let lensq: f64 = p.length_squared();
+        if 1e-160 < lensq && lensq <= 1.0 {
+            return p / lensq.sqrt();
+        }
+    }
+}
+
+pub fn random_vec() -> Vec3 {
+    return Vec3 {
+        x: rnd_float(),
+        y: rnd_float(),
+        z: rnd_float(),
+    };
+}
+
+pub fn random_range_vec(min: f64, max: f64) -> Vec3 {
+    return Vec3 {
+        x: rnd_float_range(min, max),
+        y: rnd_float_range(min, max),
+        z: rnd_float_range(min, max),
+    };
+}
+
+pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+    let on_unit_sphere: Vec3 = rand_unit_vector();
+    if dot(&on_unit_sphere, normal) > 0.0 {
+        return on_unit_sphere;
+    } else {
+        return -on_unit_sphere;
+    }
 }
 
 impl Vec3 {

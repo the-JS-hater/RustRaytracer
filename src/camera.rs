@@ -2,7 +2,7 @@ use super::hit_record::{HitRecord, Hittable};
 use super::interval::Interval;
 use super::ray::Ray;
 use super::utils::{rnd_float, rnd_float_range};
-use super::vec3::{unit_vector, Color, Point, Vec3};
+use super::vec3::{random_on_hemisphere, unit_vector, Color, Point, Vec3};
 use super::HittableList;
 use std::fs::File;
 use std::io::Write;
@@ -73,14 +73,16 @@ pub fn ray_color(ray: &Ray, world: &HittableList) -> Color {
         },
         &mut temp_rec,
     ) {
-        return (temp_rec.normal
-            + Color {
-                x: 1.0,
-                y: 1.0,
-                z: 1.0,
-            })
-            * 0.5;
+        let direction: Vec3 = random_on_hemisphere(&temp_rec.normal);
+        return ray_color(
+            &Ray {
+                origin: temp_rec.p,
+                dir: direction,
+            },
+            world,
+        ) * 0.5;
     }
+
     let unit_direction: Vec3 = unit_vector(ray.dir);
     let a: f64 = 0.5 * (unit_direction.y + 1.0);
     return Color {
